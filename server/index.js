@@ -5,7 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 
-const User = require("./models/User");
+const User = require("./models/user");
 const Project = require("./models/project");
 const Task = require("./models/task");
 
