@@ -39,9 +39,10 @@ function Dashboard() {
     if (!newTitle.trim()) return;
     setCreating(true);
     try {
-      await API.post("/projects", { title: newTitle });
-      setNewTitle(""); // clear input
-      fetchProjects(); // refresh list
+      const res = await API.post("/projects", { title: newTitle });
+      // Optimistic UI update or append to state instead of full fetch
+      setProjects((prev) => [...prev, res.data]);
+      setNewTitle("");
     } catch (err) {
       setError("Failed to create project.");
     } finally {

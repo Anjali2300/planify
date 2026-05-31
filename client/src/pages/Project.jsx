@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import API from "../api";
 import styles from "./Project.module.css";
 
+/* Recommendation: Move TaskCard to a separate file in /components/TaskCard.jsx */
 function Project() {
   const { id } = useParams(); // gets the project ID from the URL
   const navigate = useNavigate();
@@ -41,9 +42,10 @@ function Project() {
     if (!newTask.trim()) return;
     setCreating(true);
     try {
-      await API.post("/tasks", { title: newTask, projectId: id });
+      const res = await API.post("/tasks", { title: newTask, projectId: id });
+      // Append the new task directly to state to avoid a layout shift from fetchTasks
+      setTasks((prev) => [...prev, res.data]);
       setNewTask("");
-      fetchTasks();
     } catch (err) {
       setError("Failed to create task.");
     } finally {
@@ -55,7 +57,10 @@ function Project() {
   const handleStatusChange = async (taskId, newStatus) => {
     try {
       await API.put(`/tasks/${taskId}`, { status: newStatus });
-      fetchTasks(); // refresh
+      // Update local state directly
+      setTasks((prev) =>
+        prev.map((t) => (t._id === taskId ? { ...t, status: newStatus } : t))
+      );
     } catch (err) {
       setError("Failed to update task.");
     }
@@ -65,7 +70,8 @@ function Project() {
   const handleDelete = async (taskId) => {
     try {
       await API.delete(`/tasks/${taskId}`);
-      fetchTasks(); // refresh
+      // Update local state directly
+      setTasks((prev) => prev.filter((t) => t._id !== taskId));
     } catch (err) {
       setError("Failed to delete task.");
     }

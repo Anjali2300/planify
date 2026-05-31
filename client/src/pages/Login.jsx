@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
 import styles from "./Login.module.css";
+/* Suggestion: Import a shared Brand component here */
 
 function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -21,18 +22,12 @@ function Login() {
     try {
       const res = await API.post("/login", form);
 
-      // save the token in localStorage so we can use it later
       localStorage.setItem("token", res.data.token);
-
-      // redirect to dashboard after successful login
       navigate("/dashboard");
-
     } catch (err) {
-  if (err.response && err.response.data && err.response.data.message) {
-    setError(err.response.data.message);
-  } else {
-    setError("Something went wrong. Please try again.");
-  }
+      setError(
+        err.response?.data?.message || "Something went wrong. Please try again."
+      );
 } finally {
       setLoading(false);
     }
@@ -43,6 +38,7 @@ function Login() {
 
       {/* ── LEFT PANEL ── */}
       <div className={styles.left}>
+        {/* This section is duplicated in Register.jsx and should be a Component */}
         <div className={styles.brand}>
           <div className={styles.brandIcon}>📋</div>
           <span className={styles.brandName}>Planify</span>
