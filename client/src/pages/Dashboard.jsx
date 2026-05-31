@@ -1,3 +1,4 @@
+import Sidebar from "../components/Sidebar";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api";
@@ -57,22 +58,11 @@ function Dashboard() {
   };
 
   return (
-    <div className={styles.page}>
-
-      {/* ── NAVBAR ── */}
-      <nav className={styles.navbar}>
-        <div className={styles.brand}>
-          <div className={styles.brandIcon}>📋</div>
-          <span className={styles.brandName}>Planify</span>
-        </div>
-        <button className={styles.logoutBtn} onClick={handleLogout}>
-          Logout →
-        </button>
-      </nav>
+  <div className={styles.page}>
+    <Sidebar />
+    <div className={styles.main}>
 
       <div className={styles.container}>
-
-        {/* ── HEADER ── */}
         <div className={styles.header}>
           <div>
             <h1 className={styles.title}>My Projects</h1>
@@ -86,7 +76,6 @@ function Dashboard() {
 
         {error && <div className={styles.error}>{error}</div>}
 
-        {/* ── CREATE PROJECT FORM ── */}
         <form className={styles.createForm} onSubmit={handleCreate}>
           <input
             className={styles.createInput}
@@ -105,7 +94,6 @@ function Dashboard() {
           </button>
         </form>
 
-        {/* ── PROJECTS GRID ── */}
         {loading ? (
           <div className={styles.loadingState}>
             <div className={styles.spinner}></div>
@@ -140,10 +128,11 @@ function Dashboard() {
             ))}
           </div>
         )}
-
       </div>
     </div>
-  );
+  </div>
+);
+
 }
 
 export default Dashboard;

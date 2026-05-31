@@ -1,3 +1,6 @@
+import styles from "./Project.module.css";
+import styles from "./Project.module.css";
+import Sidebar from "../components/Sidebar"; // ← add this
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../api";
@@ -13,7 +16,9 @@ function Project() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
-
+const [inviteEmail, setInviteEmail] = useState("");
+const [inviting, setInviting] = useState(false);
+const [inviteMsg, setInviteMsg] = useState("");
   // ── runs once when page loads
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -23,6 +28,10 @@ function Project() {
     }
     fetchTasks();
   }, []);
+
+
+
+
 
   // ── fetch all tasks for this project
   const fetchTasks = async () => {
@@ -76,7 +85,23 @@ function Project() {
       setError("Failed to delete task.");
     }
   };
-
+const handleInvite = async (e) => {
+  e.preventDefault();
+  setInviting(true);
+  setInviteMsg("");
+  try {
+    await API.post("/projects/invite", {
+      projectId: id,
+      email: inviteEmail,
+    });
+    setInviteMsg("User invited successfully! ✅");
+    setInviteEmail("");
+  } catch (err) {
+    setInviteMsg(err.response?.data?.message || "Failed to invite user.");
+  } finally {
+    setInviting(false);
+  }
+};
   // ── filter tasks by status
   const todo = tasks.filter((t) => t.status === "todo");
   const inProgress = tasks.filter((t) => t.status === "inprogress");
@@ -106,31 +131,12 @@ function Project() {
     </div>
   );
 
-  return (
-    <div className={styles.page}>
+return (
+  <div className={styles.page}>
 
-      {/* ── NAVBAR ── */}
-      <nav className={styles.navbar}>
-        <div className={styles.navLeft}>
-          <button className={styles.backBtn} onClick={() => navigate("/dashboard")}>
-            ← Back
-          </button>
-          <div className={styles.brand}>
-            <div className={styles.brandIcon}>📋</div>
-            <span className={styles.brandName}>Planify</span>
-          </div>
-        </div>
-        <button
-          className={styles.logoutBtn}
-          onClick={() => {
-            localStorage.removeItem("token");
-            navigate("/login");
-          }}
-        >
-          Logout →
-        </button>
-      </nav>
+    <Sidebar />
 
+    <div className={styles.main}>
       <div className={styles.container}>
 
         {/* ── HEADER ── */}
@@ -142,6 +148,33 @@ function Project() {
         </div>
 
         {error && <div className={styles.error}>{error}</div>}
+
+       {/* ── INVITE FORM ── */}
+<div className={styles.inviteSection}>
+  <h3 className={styles.inviteTitle}>🔗 Invite Member</h3>
+  <form className={styles.createForm} onSubmit={handleInvite}>
+    <input
+      className={styles.createInput}
+      type="email"
+      placeholder="Enter email to invite..."
+      value={inviteEmail}
+      onChange={(e) => setInviteEmail(e.target.value)}
+      required
+    />
+    <button
+      className={inviting ? styles.createBtnDisabled : styles.createBtn}
+      type="submit"
+      disabled={inviting}
+    >
+      {inviting ? "Inviting..." : "Invite →"}
+    </button>
+  </form>
+  {inviteMsg && (
+    <p className={inviteMsg.includes("✅") ? styles.successMsg : styles.error}>
+      {inviteMsg}
+    </p>
+  )}
+</div>
 
         {/* ── CREATE TASK FORM ── */}
         <form className={styles.createForm} onSubmit={handleCreate}>
@@ -161,7 +194,6 @@ function Project() {
             {creating ? "Adding..." : "+ Add Task"}
           </button>
         </form>
-
         {/* ── KANBAN BOARD ── */}
         {loading ? (
           <div className={styles.loadingState}>
@@ -221,9 +253,11 @@ function Project() {
 
           </div>
         )}
+
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default Project;
