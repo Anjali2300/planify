@@ -7,8 +7,50 @@
   background: #0a0a0f;
   font-family: 'DM Sans', sans-serif;
   color: #ffffff;
+  display: flex;  /* ← add this */
 }
 
+
+.inviteTitle {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+}
+.inviteSection {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #111118;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+}
+
+.inviteTitle {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+}
+
+.successMsg {
+  font-size: 13px;
+  color: #34d399;
+  margin-top: 0.75rem;
+}
+.successMsg {
+  font-size: 13px;
+  color: #34d399;
+  margin-top: 0.75rem;
+}
+.main {
+  flex: 1;              /* ← takes remaining space */
+  margin-left: 240px;
+  min-height: 100vh;
+  background: #0a0a0f;
+  overflow-x: hidden;
+}
 /* ── NAVBAR ── */
 .navbar {
   display: flex;

@@ -7,7 +7,17 @@
   background: #0a0a0f;
   font-family: 'DM Sans', sans-serif;
   color: #ffffff;
+  display: flex;  /* ← add this */
 }
+
+.main {
+  flex: 1;
+  margin-left: 240px;
+  min-height: 100vh;
+  background: #0a0a0f;
+  overflow-x: hidden;
+}
+
 
 /* ── NAVBAR ── */
 .navbar {
