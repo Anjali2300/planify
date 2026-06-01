@@ -1,10 +1,10 @@
 import styles from "./Project.module.css";
-import styles from "./Project.module.css";
+
 import Sidebar from "../components/Sidebar"; // ← add this
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../api";
-import styles from "./Project.module.css";
+
 
 /* Recommendation: Move TaskCard to a separate file in /components/TaskCard.jsx */
 function Project() {
