@@ -10,7 +10,7 @@ import API from "../api";
 function Project() {
   const { id } = useParams(); // gets the project ID from the URL
   const navigate = useNavigate();
-
+const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,21 @@ const [inviteMsg, setInviteMsg] = useState("");
   }, []);
 
 
-
+const fetchProject = async () => {
+  try {
+    const res = await API.get("/projects");
+    const found = res.data.find((p) => p._id === id);
+    setProject(found);
+  } catch (err) {
+    console.log(err);
+  }
+};
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) { navigate("/login"); return; }
+  fetchProject(); // ← add this
+  fetchTasks();
+}, []);
 
 
   // ── fetch all tasks for this project
