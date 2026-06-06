@@ -110,16 +110,22 @@ app.post("/login", async (req, res) => {
       { expiresIn: "1d" }
     );
 
+    // ✅ now returning user info along with token
     res.json({
       message: "Login successful ✅",
       token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+      }
     });
+
   } catch (err) {
     console.log("LOGIN ERROR:", err);
     res.status(500).json({ message: "Server error ❌" });
   }
 });
-
 /* ================= PROFILE ================= */
 app.get("/profile", authMiddleware, (req, res) => {
   res.json({ message: "Welcome user " + req.user.userId });
