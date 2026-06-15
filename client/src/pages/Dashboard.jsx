@@ -1,133 +1,63 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import API from "../api";
 import Sidebar from "../components/Sidebar";
-import styles from "./Project.module.css";
+import styles from "./Dashboard.module.css";
 
-function Project() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-
-  const [project, setProject] = useState(null);
-  const [tasks, setTasks] = useState([]);
-  const [newTask, setNewTask] = useState("");
+function Dashboard() {
+  const [projects, setProjects] = useState([]);
+  const [newTitle, setNewTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviting, setInviting] = useState(false);
-  const [inviteMsg, setInviteMsg] = useState("");
+  const navigate = useNavigate();
 
-  // get current logged in user
-  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) { navigate("/login"); return; }
-    fetchProject();
-    fetchTasks();
-  }, []);
-
-  // fetch project details including members with roles
-  const fetchProject = async () => {
-    try {
-      const res = await API.get(`/projects/${id}`);
-      setProject(res.data);
-    } catch (err) {
-      console.log(err);
+  // safely get current user from localStorage
+  let currentUser = {};
+  try {
+    const stored = localStorage.getItem("user");
+    if (stored && stored !== "undefined") {
+      currentUser = JSON.parse(stored);
     }
-  };
+  } catch (e) {
+    currentUser = {};
+  }
 
-  const fetchTasks = async () => {
+  const fetchProjects = async () => {
     try {
-      const res = await API.get(`/tasks/${id}`);
-      setTasks(res.data);
+      const res = await API.get("/projects");
+      setProjects(res.data);
     } catch (err) {
-      setError("Failed to load tasks.");
+      setError("Failed to load projects.");
     } finally {
       setLoading(false);
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    fetchProjects();
+  }, []);
+
   const handleCreate = async (e) => {
     e.preventDefault();
-    if (!newTask.trim()) return;
+    if (!newTitle.trim()) return;
     setCreating(true);
     try {
-      await API.post("/tasks", { title: newTask, projectId: id });
-      setNewTask("");
-      fetchTasks();
+      await API.post("/projects", { title: newTitle });
+      setNewTitle("");
+      fetchProjects();
     } catch (err) {
-      setError("Failed to create task.");
+      setError("Failed to create project.");
     } finally {
       setCreating(false);
     }
   };
-
-  const handleStatusChange = async (taskId, newStatus) => {
-    try {
-      await API.put(`/tasks/${taskId}`, { status: newStatus });
-      fetchTasks();
-    } catch (err) {
-      setError("Failed to update task.");
-    }
-  };
-
-  const handleDelete = async (taskId) => {
-    try {
-      await API.delete(`/tasks/${taskId}`);
-      fetchTasks();
-    } catch (err) {
-      setError("Failed to delete task.");
-    }
-  };
-
-  const handleInvite = async (e) => {
-    e.preventDefault();
-    setInviting(true);
-    setInviteMsg("");
-    try {
-      await API.post("/projects/invite", { projectId: id, email: inviteEmail });
-      setInviteMsg("User invited successfully! ✅");
-      setInviteEmail("");
-      fetchProject(); // refresh members list
-    } catch (err) {
-      setInviteMsg(err.response?.data?.message || "Failed to invite user.");
-    } finally {
-      setInviting(false);
-    }
-  };
-
-  // check if current user is admin of this project
-  const isCurrentUserAdmin = project?.members?.some(
-    (m) => m._id?.toString() === currentUser._id?.toString() && m.role === "admin"
-  );
-
-  // filter tasks by status
-  const todo = tasks.filter((t) => t.status === "todo");
-  const inProgress = tasks.filter((t) => t.status === "inprogress");
-  const done = tasks.filter((t) => t.status === "done");
-
-  // reusable task card
-  const TaskCard = ({ task }) => (
-    <div className={styles.taskCard}>
-      <p className={styles.taskTitle}>{task.title}</p>
-      <div className={styles.taskActions}>
-        <select
-          className={styles.select}
-          value={task.status}
-          onChange={(e) => handleStatusChange(task._id, e.target.value)}
-        >
-          <option value="todo">Todo</option>
-          <option value="inprogress">In Progress</option>
-          <option value="done">Done</option>
-        </select>
-        <button className={styles.deleteBtn} onClick={() => handleDelete(task._id)}>
-          🗑
-        </button>
-      </div>
-    </div>
-  );
 
   return (
     <div className={styles.page}>
@@ -136,92 +66,28 @@ function Project() {
       <div className={styles.main}>
         <div className={styles.container}>
 
-          {/* ── HEADER with project name ── */}
+          {/* ── HEADER ── */}
           <div className={styles.header}>
             <div>
-              <h1 className={styles.title}>
-                {project ? project.title : "Loading..."}
-              </h1>
+              <h1 className={styles.title}>My Projects</h1>
               <p className={styles.subtitle}>
-                {tasks.length} task{tasks.length !== 1 ? "s" : ""} total
+                {projects.length === 0
+                  ? "No projects yet — create your first one!"
+                  : `You have ${projects.length} project${projects.length > 1 ? "s" : ""}`}
               </p>
             </div>
-            {/* show current user's role badge */}
-            {project && (
-              <span className={
-                isCurrentUserAdmin ? styles.roleAdmin : styles.roleMember
-              }>
-                {isCurrentUserAdmin ? "👑 Admin" : "👤 Member"}
-              </span>
-            )}
           </div>
 
           {error && <div className={styles.error}>{error}</div>}
 
-          {/* ── MEMBERS LIST ── */}
-          {project && (
-            <div className={styles.membersSection}>
-              <h3 className={styles.membersTitle}>👥 Team Members</h3>
-              <div className={styles.membersList}>
-                {project.members.map((member) => (
-                  <div key={member._id} className={styles.memberChip}>
-                    <div className={styles.memberAvatar}>
-                      {member.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className={styles.memberInfo}>
-                      <span className={styles.memberName}>{member.name}</span>
-                      <span className={styles.memberEmail}>{member.email}</span>
-                    </div>
-                    <span className={
-                      member.role === "admin"
-                        ? styles.roleAdminBadge
-                        : styles.roleMemberBadge
-                    }>
-                      {member.role === "admin" ? "👑 Admin" : "👤 Member"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── INVITE FORM — only admin sees this ── */}
-          {isCurrentUserAdmin && (
-            <div className={styles.inviteSection}>
-              <h3 className={styles.inviteTitle}>🔗 Invite Member</h3>
-              <form className={styles.createForm} onSubmit={handleInvite}>
-                <input
-                  className={styles.createInput}
-                  type="email"
-                  placeholder="Enter email to invite..."
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  required
-                />
-                <button
-                  className={inviting ? styles.createBtnDisabled : styles.createBtn}
-                  type="submit"
-                  disabled={inviting}
-                >
-                  {inviting ? "Inviting..." : "Invite →"}
-                </button>
-              </form>
-              {inviteMsg && (
-                <p className={inviteMsg.includes("✅") ? styles.successMsg : styles.error}>
-                  {inviteMsg}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* ── CREATE TASK FORM ── */}
+          {/* ── CREATE PROJECT FORM ── */}
           <form className={styles.createForm} onSubmit={handleCreate}>
             <input
               className={styles.createInput}
               type="text"
-              placeholder="Enter task name..."
-              value={newTask}
-              onChange={(e) => setNewTask(e.target.value)}
+              placeholder="Enter project name..."
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
               required
             />
             <button
@@ -229,61 +95,58 @@ function Project() {
               type="submit"
               disabled={creating}
             >
-              {creating ? "Adding..." : "+ Add Task"}
+              {creating ? "Creating..." : "+ New Project"}
             </button>
           </form>
 
-          {/* ── KANBAN BOARD ── */}
+          {/* ── PROJECTS GRID ── */}
           {loading ? (
             <div className={styles.loadingState}>
               <div className={styles.spinner}></div>
-              <p>Loading tasks...</p>
+              <p>Loading your projects...</p>
+            </div>
+          ) : projects.length === 0 ? (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon}>📁</div>
+              <h3>No projects yet</h3>
+              <p>Create your first project above to get started</p>
             </div>
           ) : (
-            <div className={styles.board}>
+            <div className={styles.grid}>
+              {projects.map((project) => {
+                // find current user's role in this project
+                const myMember = project.members.find(
+                  (m) => m.userId?.toString() === currentUser._id?.toString()
+                );
+                const myRole = myMember ? myMember.role : "member";
 
-              <div className={styles.column}>
-                <div className={styles.columnHeader}>
-                  <span className={styles.columnDot} style={{ background: "#6b7280" }}></span>
-                  <h3 className={styles.columnTitle}>Todo</h3>
-                  <span className={styles.columnCount}>{todo.length}</span>
-                </div>
-                <div className={styles.taskList}>
-                  {todo.length === 0
-                    ? <p className={styles.emptyCol}>No tasks here</p>
-                    : todo.map((task) => <TaskCard key={task._id} task={task} />)
-                  }
-                </div>
-              </div>
-
-              <div className={styles.column}>
-                <div className={styles.columnHeader}>
-                  <span className={styles.columnDot} style={{ background: "#f59e0b" }}></span>
-                  <h3 className={styles.columnTitle}>In Progress</h3>
-                  <span className={styles.columnCount}>{inProgress.length}</span>
-                </div>
-                <div className={styles.taskList}>
-                  {inProgress.length === 0
-                    ? <p className={styles.emptyCol}>No tasks here</p>
-                    : inProgress.map((task) => <TaskCard key={task._id} task={task} />)
-                  }
-                </div>
-              </div>
-
-              <div className={styles.column}>
-                <div className={styles.columnHeader}>
-                  <span className={styles.columnDot} style={{ background: "#10b981" }}></span>
-                  <h3 className={styles.columnTitle}>Done</h3>
-                  <span className={styles.columnCount}>{done.length}</span>
-                </div>
-                <div className={styles.taskList}>
-                  {done.length === 0
-                    ? <p className={styles.emptyCol}>No tasks here</p>
-                    : done.map((task) => <TaskCard key={task._id} task={task} />)
-                  }
-                </div>
-              </div>
-
+                return (
+                  <div
+                    key={project._id}
+                    className={styles.card}
+                    onClick={() => navigate(`/project/${project._id}`)}
+                  >
+                    <div className={styles.cardTop}>
+                      <div className={styles.cardIcon}>📌</div>
+                      <div className={styles.cardArrow}>→</div>
+                    </div>
+                    <h3 className={styles.cardTitle}>{project.title}</h3>
+                    <p className={styles.cardMeta}>
+                      {project.members.length} member{project.members.length !== 1 ? "s" : ""}
+                    </p>
+                    <div className={styles.cardFooter}>
+                      <span className={styles.cardTag}>Active</span>
+                      <span className={
+                        myRole === "admin"
+                          ? styles.cardRoleAdmin
+                          : styles.cardRoleMember
+                      }>
+                        {myRole === "admin" ? "👑 Admin" : "👤 Member"}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -293,4 +156,4 @@ function Project() {
   );
 }
 
-export default Project;
+export default Dashboard;

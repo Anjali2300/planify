@@ -5,8 +5,16 @@ function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // get user from localStorage
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  // safely get user from localStorage
+  let user = {};
+  try {
+    const stored = localStorage.getItem("user");
+    if (stored && stored !== "undefined") {
+      user = JSON.parse(stored);
+    }
+  } catch (e) {
+    user = {};
+  }
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -21,13 +29,13 @@ function Sidebar() {
   return (
     <div className={styles.sidebar}>
 
-      {/* ── BRAND ── */}
+      {/* BRAND */}
       <div className={styles.brand}>
         <div className={styles.brandIcon}>📋</div>
         <span className={styles.brandName}>Planify</span>
       </div>
 
-      {/* ── NAV ITEMS ── */}
+      {/* NAV ITEMS */}
       <nav className={styles.nav}>
         {navItems.map((item) => (
           <button
@@ -45,10 +53,9 @@ function Sidebar() {
         ))}
       </nav>
 
-      {/* ── SPACER ── */}
       <div className={styles.spacer}></div>
 
-      {/* ── USER INFO ── */}
+      {/* USER INFO */}
       <div className={styles.userSection}>
         <div className={styles.userAvatar}>
           {user.name ? user.name.charAt(0).toUpperCase() : "U"}
@@ -59,7 +66,7 @@ function Sidebar() {
         </div>
       </div>
 
-      {/* ── LOGOUT ── */}
+      {/* LOGOUT */}
       <button className={styles.logoutBtn} onClick={handleLogout}>
         <span>→</span>
         <span>Logout</span>
