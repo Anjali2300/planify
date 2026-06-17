@@ -55,7 +55,7 @@ function Project() {
     if (!token) { navigate("/login"); return; }
     fetchProject();
     fetchTasks();
-  }, []);
+  }, [fetchProject, fetchTasks, navigate]);
 
   const handleCreate = async (e) => {
     e.preventDefault();

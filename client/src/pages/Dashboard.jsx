@@ -42,7 +42,7 @@ function Dashboard() {
       return;
     }
     fetchProjects();
-  }, []);
+  }, [navigate]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
