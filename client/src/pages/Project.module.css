@@ -135,6 +135,43 @@
   gap: 14px;
 }
 
+.membersToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #ffffff;
+  padding: 12px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 14px 30px rgba(99,102,241,0.2);
+}
+
+.dropdownArrow {
+  font-size: 0.82rem;
+}
+
+.membersDropdownPanel {
+  margin-top: 1rem;
+  padding: 20px 22px;
+  background: linear-gradient(180deg, #161b2a 0%, #11151f 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  box-shadow: 0 28px 80px rgba(0,0,0,0.55);
+}
+
+.memberDropdownItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
 .memberChip {
   display: flex;
   align-items: center;
@@ -190,8 +227,14 @@
 
 .createForm {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 2rem;
+  padding: 1.25rem;
+  border-radius: 28px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 .inviteOverlay {
@@ -332,9 +375,9 @@
 .select {
   width: 100%;
   padding: 16px 18px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 16px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 26px;
   color: #e5e7eb;
   outline: none;
 }
@@ -374,13 +417,21 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 36px;
+  padding: 22px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 24px 70px rgba(0,0,0,0.18);
 }
 
 .column {
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 22px;
+  background: rgba(255,255,255,0.04);
+  border: none;
+  border-radius: 36px;
   padding: 1.5rem;
   min-height: 360px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 20px 60px rgba(0,0,0,0.18);
   transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -448,10 +499,10 @@
 }
 
 .taskCard {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 18px;
-  padding: 1.25rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 24px;
+  padding: 1.35rem;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   cursor: grab;
 }

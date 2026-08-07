@@ -18,6 +18,7 @@ function Project() {
   const [inviting, setInviting] = useState(false);
   const [inviteMsg, setInviteMsg] = useState("");
   const [showInvitePanel, setShowInvitePanel] = useState(false);
+  const [showMembersDropdown, setShowMembersDropdown] = useState(false);
   const [allUsers, setAllUsers] = useState([]);
   const [inviteSearch, setInviteSearch] = useState("");
   const [loadingUsers, setLoadingUsers] = useState(false);
@@ -222,6 +223,17 @@ function Project() {
                 </span>
               )}
 
+              {projectData && (
+                <button
+                  className={styles.membersToggleBtn}
+                  type="button"
+                  onClick={() => setShowMembersDropdown((prev) => !prev)}
+                >
+                  Team ({projectData.members.length})
+                  <span className={styles.dropdownArrow}>{showMembersDropdown ? "▲" : "▼"}</span>
+                </button>
+              )}
+
               {isCurrentUserAdmin && (
                 <button
                   className={styles.invitePeopleBtn}
@@ -232,22 +244,15 @@ function Project() {
                 </button>
               )}
             </div>
-          </div>
-
-          {error && <div className={styles.error}>{error}</div>}
-
-          {/* MEMBERS LIST */}
-          {projectData && (
-            <div className={styles.membersSection}>
-              <h3 className={styles.membersTitle}>👥 Team Members</h3>
-              <div className={styles.membersList}>
+            {projectData && showMembersDropdown && (
+              <div className={styles.membersDropdownPanel}>
                 {projectData.members.map((member) => (
-                  <div key={member._id} className={styles.memberChip}>
+                  <div key={member._id} className={styles.memberDropdownItem}>
                     <div className={styles.memberAvatar}>
                       {member.avatar ? (
                         <img src={member.avatar} alt={member.name || "Avatar"} />
                       ) : (
-                        <span>{member.name.charAt(0).toUpperCase()}</span>
+                        <span>{member.name?.charAt(0).toUpperCase()}</span>
                       )}
                     </div>
                     <div className={styles.memberInfo}>
@@ -264,8 +269,12 @@ function Project() {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
+
+          {error && <div className={styles.error}>{error}</div>}
+
+          {/* MEMBERS LIST */}
 
           {showInvitePanel && isCurrentUserAdmin && (
             <div className={styles.inviteOverlay} onClick={() => setShowInvitePanel(false)}>
