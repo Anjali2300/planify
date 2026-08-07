@@ -22,7 +22,7 @@ function Login() {
       // step 1 — login and get token + user info in one call
       const res = await API.post("/login", form);
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user)); // ✅ save user directly
+      localStorage.setItem("user", JSON.stringify(res.data.user));
 
       navigate("/dashboard");
 
@@ -89,6 +89,15 @@ function Login() {
           </div>
 
           {error && <div className={styles.error}>{error}</div>}
+
+          {loading && (
+            <div className={styles.notice}>
+              <span className={styles.noticeIcon}>⏳</span>
+              <p>
+                Taking a bit longer than usual. This app may wake up on its first use, so please wait a moment while it gets ready.
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             <div className={styles.inputGroup}>

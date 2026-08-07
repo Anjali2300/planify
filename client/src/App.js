@@ -3,6 +3,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Project from "./pages/Project";
+import "./styles/theme.css";
 
 function App() {
   return (

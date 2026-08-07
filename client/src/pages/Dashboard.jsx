@@ -76,6 +76,23 @@ function Dashboard() {
                   : `You have ${projects.length} project${projects.length > 1 ? "s" : ""}`}
               </p>
             </div>
+            <div className={styles.userCard}>
+              <div className={styles.userCardAvatar}>
+                {currentUser.avatar ? (
+                  <img src={currentUser.avatar} alt={currentUser.name || "Profile"} />
+                ) : (
+                  <span>{currentUser.name ? currentUser.name.charAt(0).toUpperCase() : "U"}</span>
+                )}
+              </div>
+              <div className={styles.userCardInfo}>
+                <p className={styles.userCardName}>
+                  Hi, {currentUser.name ? currentUser.name.split(" ")[0] : "there"}
+                </p>
+                <p className={styles.userCardRole}>
+                  {currentUser.email || "Project member"}
+                </p>
+              </div>
+            </div>
           </div>
 
           {error && <div className={styles.error}>{error}</div>}

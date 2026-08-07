@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../api";
 import Sidebar from "../components/Sidebar";
@@ -17,6 +17,12 @@ function Project() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviting, setInviting] = useState(false);
   const [inviteMsg, setInviteMsg] = useState("");
+  const [showInvitePanel, setShowInvitePanel] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [inviteSearch, setInviteSearch] = useState("");
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  const [dragOverColumn, setDragOverColumn] = useState(null);
 
   // safely get current user from localStorage
   let currentUser = {};
@@ -29,16 +35,16 @@ function Project() {
     currentUser = {};
   }
 
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     try {
       const res = await API.get(`/projects/${id}`);
       setProjectData(res.data);
     } catch (err) {
       console.log(err);
     }
-  };
+  }, [id]);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       const res = await API.get(`/tasks/${id}`);
       setTasks(res.data);
@@ -47,16 +53,41 @@ function Project() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  
+  // check if current user is admin of this project
+  const isCurrentUserAdmin = projectData?.members?.some(
+    (m) => m._id?.toString() === currentUser._id?.toString() && m.role === "admin"
+  );
+
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) { navigate("/login"); return; }
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     fetchProject();
     fetchTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [navigate, fetchProject, fetchTasks]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      if (!projectData || !isCurrentUserAdmin) return;
+
+      try {
+        setLoadingUsers(true);
+        const res = await API.get("/users");
+        setAllUsers(res.data || []);
+      } catch (err) {
+        setError("Failed to load active users.");
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    fetchUsers();
+  }, [projectData, isCurrentUserAdmin]);
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -91,15 +122,24 @@ function Project() {
     }
   };
 
-  const handleInvite = async (e) => {
-    e.preventDefault();
+  const handleTaskDrop = async (status) => {
+    if (!draggedTaskId) return;
+    setDragOverColumn(null);
+    await handleStatusChange(draggedTaskId, status);
+    setDraggedTaskId(null);
+  };
+
+  const handleInvite = async (email) => {
     setInviting(true);
     setInviteMsg("");
     try {
-      await API.post("/projects/invite", { projectId: id, email: inviteEmail });
+      await API.post("/projects/invite", { projectId: id, email });
       setInviteMsg("User invited successfully! ✅");
       setInviteEmail("");
+      setInviteSearch("");
       fetchProject();
+      const res = await API.get("/users");
+      setAllUsers(res.data || []);
     } catch (err) {
       setInviteMsg(err.response?.data?.message || "Failed to invite user.");
     } finally {
@@ -107,10 +147,23 @@ function Project() {
     }
   };
 
-  // check if current user is admin of this project
-  const isCurrentUserAdmin = projectData?.members?.some(
-    (m) => m._id?.toString() === currentUser._id?.toString() && m.role === "admin"
-  );
+  const handleInviteSubmit = async (e) => {
+    e.preventDefault();
+    if (!inviteEmail.trim()) return;
+    await handleInvite(inviteEmail.trim());
+  };
+
+  const inviteableUsers = (allUsers || [])
+    .filter((user) => user._id?.toString() !== currentUser._id?.toString())
+    .filter((user) => !projectData?.members?.some((member) => member._id?.toString() === user._id?.toString()))
+    .filter((user) => {
+      const search = inviteSearch.trim().toLowerCase();
+      if (!search) return true;
+      return (
+        user.name?.toLowerCase().includes(search) ||
+        user.email?.toLowerCase().includes(search)
+      );
+    });
 
   // filter tasks by status
   const todo = tasks.filter((t) => t.status === "todo");
@@ -118,7 +171,15 @@ function Project() {
   const done = tasks.filter((t) => t.status === "done");
 
   const TaskCard = ({ task }) => (
-    <div className={styles.taskCard}>
+    <div
+      className={`${styles.taskCard} ${draggedTaskId === task._id ? styles.taskCardDragging : ""}`}
+      draggable
+      onDragStart={() => setDraggedTaskId(task._id)}
+      onDragEnd={() => {
+        setDraggedTaskId(null);
+        setDragOverColumn(null);
+      }}
+    >
       <p className={styles.taskTitle}>{task.title}</p>
       <div className={styles.taskActions}>
         <select
@@ -153,11 +214,24 @@ function Project() {
                 {tasks.length} task{tasks.length !== 1 ? "s" : ""} total
               </p>
             </div>
-            {projectData && (
-              <span className={isCurrentUserAdmin ? styles.roleAdmin : styles.roleMember}>
-                {isCurrentUserAdmin ? "👑 Admin" : "👤 Member"}
-              </span>
-            )}
+
+            <div className={styles.headerActions}>
+              {projectData && (
+                <span className={isCurrentUserAdmin ? styles.roleAdmin : styles.roleMember}>
+                  {isCurrentUserAdmin ? "👑 Admin" : "👤 Member"}
+                </span>
+              )}
+
+              {isCurrentUserAdmin && (
+                <button
+                  className={styles.invitePeopleBtn}
+                  type="button"
+                  onClick={() => setShowInvitePanel(true)}
+                >
+                  Invite People
+                </button>
+              )}
+            </div>
           </div>
 
           {error && <div className={styles.error}>{error}</div>}
@@ -170,7 +244,11 @@ function Project() {
                 {projectData.members.map((member) => (
                   <div key={member._id} className={styles.memberChip}>
                     <div className={styles.memberAvatar}>
-                      {member.name.charAt(0).toUpperCase()}
+                      {member.avatar ? (
+                        <img src={member.avatar} alt={member.name || "Avatar"} />
+                      ) : (
+                        <span>{member.name.charAt(0).toUpperCase()}</span>
+                      )}
                     </div>
                     <div className={styles.memberInfo}>
                       <span className={styles.memberName}>{member.name}</span>
@@ -189,32 +267,83 @@ function Project() {
             </div>
           )}
 
-          {/* INVITE FORM - only admin sees this */}
-          {isCurrentUserAdmin && (
-            <div className={styles.inviteSection}>
-              <h3 className={styles.inviteTitle}>🔗 Invite Member</h3>
-              <form className={styles.createForm} onSubmit={handleInvite}>
+          {showInvitePanel && isCurrentUserAdmin && (
+            <div className={styles.inviteOverlay} onClick={() => setShowInvitePanel(false)}>
+              <div className={styles.invitePanel} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.invitePanelHeader}>
+                  <h3 className={styles.inviteTitle}>Invite Members</h3>
+                  <button
+                    type="button"
+                    className={styles.inviteClose}
+                    onClick={() => setShowInvitePanel(false)}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <form className={styles.inviteEmailForm} onSubmit={handleInviteSubmit}>
+                  <input
+                    className={styles.createInput}
+                    type="email"
+                    placeholder="Invite by email..."
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    required
+                  />
+                  <button
+                    className={inviting ? styles.createBtnDisabled : styles.createBtn}
+                    type="submit"
+                    disabled={inviting}
+                  >
+                    {inviting ? "Inviting..." : "Invite"}
+                  </button>
+                </form>
+
                 <input
-                  className={styles.createInput}
-                  type="email"
-                  placeholder="Enter email to invite..."
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  required
+                  className={styles.inviteSearch}
+                  type="text"
+                  placeholder="Search active users..."
+                  value={inviteSearch}
+                  onChange={(e) => setInviteSearch(e.target.value)}
                 />
-                <button
-                  className={inviting ? styles.createBtnDisabled : styles.createBtn}
-                  type="submit"
-                  disabled={inviting}
-                >
-                  {inviting ? "Inviting..." : "Invite →"}
-                </button>
-              </form>
-              {inviteMsg && (
-                <p className={inviteMsg.includes("✅") ? styles.successMsg : styles.error}>
-                  {inviteMsg}
-                </p>
-              )}
+
+                {loadingUsers ? (
+                  <div className={styles.loadingState}>Loading active users...</div>
+                ) : inviteableUsers.length === 0 ? (
+                  <p className={styles.inviteEmpty}>No active users to invite right now.</p>
+                ) : (
+                  <div className={styles.inviteUserList}>
+                    {inviteableUsers.map((user) => (
+                      <div key={user._id} className={styles.inviteUserItem}>
+                        <div className={styles.inviteUserAvatar}>
+                          {user.avatar ? (
+                            <img src={user.avatar} alt={user.name || "User avatar"} />
+                          ) : (
+                            <span>{user.name?.charAt(0)?.toUpperCase() || "U"}</span>
+                          )}
+                        </div>
+                        <div className={styles.inviteUserInfo}>
+                          <span className={styles.inviteUserName}>{user.name}</span>
+                          <span className={styles.inviteUserEmail}>{user.email}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className={styles.inviteUserBtn}
+                          onClick={() => handleInvite(user.email)}
+                        >
+                          Invite
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {inviteMsg && (
+                  <p className={inviteMsg.includes("✅") ? styles.successMsg : styles.error}>
+                    {inviteMsg}
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
@@ -248,7 +377,7 @@ function Project() {
 
               <div className={styles.column}>
                 <div className={styles.columnHeader}>
-                  <span className={styles.columnDot} style={{ background: "#6b7280" }}></span>
+                  <span className={`${styles.columnDot} ${styles.columnDotTodo}`}></span>
                   <h3 className={styles.columnTitle}>Todo</h3>
                   <span className={styles.columnCount}>{todo.length}</span>
                 </div>
@@ -260,9 +389,16 @@ function Project() {
                 </div>
               </div>
 
-              <div className={styles.column}>
+              <div
+                className={`${styles.column} ${dragOverColumn === "inprogress" ? styles.columnActive : ""}`}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOverColumn("inprogress");
+                }}
+                onDrop={() => handleTaskDrop("inprogress")}
+              >
                 <div className={styles.columnHeader}>
-                  <span className={styles.columnDot} style={{ background: "#f59e0b" }}></span>
+                  <span className={`${styles.columnDot} ${styles.columnDotInProgress}`}></span>
                   <h3 className={styles.columnTitle}>In Progress</h3>
                   <span className={styles.columnCount}>{inProgress.length}</span>
                 </div>
@@ -274,9 +410,16 @@ function Project() {
                 </div>
               </div>
 
-              <div className={styles.column}>
+              <div
+                className={`${styles.column} ${dragOverColumn === "done" ? styles.columnActive : ""}`}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOverColumn("done");
+                }}
+                onDrop={() => handleTaskDrop("done")}
+              >
                 <div className={styles.columnHeader}>
-                  <span className={styles.columnDot} style={{ background: "#10b981" }}></span>
+                  <span className={`${styles.columnDot} ${styles.columnDotDone}`}></span>
                   <h3 className={styles.columnTitle}>Done</h3>
                   <span className={styles.columnCount}>{done.length}</span>
                 </div>

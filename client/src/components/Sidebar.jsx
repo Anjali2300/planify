@@ -58,11 +58,19 @@ function Sidebar() {
       {/* USER INFO */}
       <div className={styles.userSection}>
         <div className={styles.userAvatar}>
-          {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+          {user.avatar ? (
+            <img
+              src={user.avatar}
+              alt={user.name || "User avatar"}
+              className={styles.avatarImage}
+            />
+          ) : (
+            <span>{user.name ? user.name.charAt(0).toUpperCase() : "U"}</span>
+          )}
         </div>
         <div className={styles.userInfo}>
           <p className={styles.userName}>{user.name || "User"}</p>
-          <p className={styles.userRole}>Member</p>
+          <p className={styles.userRole}>{user.email || "Member"}</p>
         </div>
       </div>
 

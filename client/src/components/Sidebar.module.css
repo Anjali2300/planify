@@ -1,13 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
 .sidebar {
-  width: 240px;
+  width: 260px;
   min-height: 100vh;
-  background: #0d0d1a;
-  border-right: 1px solid rgba(255,255,255,0.06);
+  background: linear-gradient(180deg, #121728 0%, #0b0f1a 100%);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  padding: 1.5rem 1rem;
+  padding: 1.75rem 1.25rem;
   position: fixed;
   top: 0;
   left: 0;
@@ -59,7 +59,7 @@
   border-radius: 10px;
   border: none;
   background: transparent;
-  color: #6b7280;
+  color: var(--muted);
   font-size: 14px;
   font-family: 'DM Sans', sans-serif;
   cursor: pointer;
@@ -69,8 +69,8 @@
 }
 
 .navItem:hover {
-  background: rgba(255,255,255,0.05);
-  color: #ffffff;
+  background: var(--surface);
+  color: var(--text);
 }
 
 .navItemActive {
@@ -80,15 +80,15 @@
   padding: 10px 12px;
   border-radius: 10px;
   border: none;
-  background: rgba(99,102,241,0.15);
-  color: #818cf8;
+  background: var(--accent-soft);
+  color: #c7d2fe;
   font-size: 14px;
   font-family: 'DM Sans', sans-serif;
   cursor: pointer;
   text-align: left;
   width: 100%;
   font-weight: 500;
-  border: 1px solid rgba(99,102,241,0.2);
+  border: 1px solid rgba(99,102,241,0.22);
 }
 
 .navIcon {
@@ -108,15 +108,15 @@
   align-items: center;
   gap: 10px;
   padding: 12px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
   border-radius: 12px;
   margin-bottom: 8px;
 }
 
 .userAvatar {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   border-radius: 50%;
   display: flex;
@@ -127,6 +127,13 @@
   font-weight: 700;
   color: white;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .userInfo {
@@ -161,7 +168,7 @@
   border-radius: 10px;
   border: none;
   background: transparent;
-  color: #6b7280;
+  color: var(--muted);
   font-size: 14px;
   font-family: 'DM Sans', sans-serif;
   cursor: pointer;
@@ -172,5 +179,44 @@
 
 .logoutBtn:hover {
   background: rgba(239,68,68,0.1);
-  color: #f87171;
+  color: var(--danger);
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    min-height: auto;
+    height: auto;
+    padding: 1rem;
+    border-right: none;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    margin-bottom: 0;
+  }
+
+  .nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-start;
+    margin: 0;
+  }
+
+  .navItem,
+  .navItemActive,
+  .logoutBtn {
+    flex: 1 1 auto;
+    padding: 10px 10px;
+    font-size: 13px;
+  }
+
+  .userSection {
+    display: none;
+  }
 }

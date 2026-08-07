@@ -1,3 +1,15 @@
+# Client (Planify)
+
+This folder contains the React frontend.
+
+Notable locations after reorganization:
+
+- `src/api/index.js` — axios instance used throughout the app (moved from `src/api.js`).
+- `src/components/` — UI components (unchanged).
+- `src/pages/` — page components.
+- `src/styles/` — global/shared styles (new folder; you can move shared CSS here).
+
+Imports that referenced `../api` will continue to work because `src/api/index.js` is the module index.
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
