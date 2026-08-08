@@ -162,6 +162,29 @@
   box-shadow: 0 28px 80px rgba(0,0,0,0.55);
 }
 
+.membersPanel {
+  width: min(560px, 100%);
+  max-height: min(620px, calc(100vh - 40px));
+  overflow-y: auto;
+  background: linear-gradient(180deg, #161b2a 0%, #11151f 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  padding: 20px 22px 18px;
+  box-shadow: 0 28px 80px rgba(0,0,0,0.55);
+}
+
+.membersPanelSubtitle {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  margin: 5px 0 0;
+}
+
+.membersPanelList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .memberDropdownItem {
   display: flex;
   align-items: center;

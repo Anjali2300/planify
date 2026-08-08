@@ -228,9 +228,10 @@ function Project() {
                   className={styles.membersToggleBtn}
                   type="button"
                   onClick={() => setShowMembersDropdown((prev) => !prev)}
+                  aria-expanded={showMembersDropdown}
                 >
                   Team ({projectData.members.length})
-                  <span className={styles.dropdownArrow}>{showMembersDropdown ? "▲" : "▼"}</span>
+                  <span className={styles.dropdownArrow}>▼</span>
                 </button>
               )}
 
@@ -244,37 +245,57 @@ function Project() {
                 </button>
               )}
             </div>
-            {projectData && showMembersDropdown && (
-              <div className={styles.membersDropdownPanel}>
-                {projectData.members.map((member) => (
-                  <div key={member._id} className={styles.memberDropdownItem}>
-                    <div className={styles.memberAvatar}>
-                      {member.avatar ? (
-                        <img src={member.avatar} alt={member.name || "Avatar"} />
-                      ) : (
-                        <span>{member.name?.charAt(0).toUpperCase()}</span>
-                      )}
-                    </div>
-                    <div className={styles.memberInfo}>
-                      <span className={styles.memberName}>{member.name}</span>
-                      <span className={styles.memberEmail}>{member.email}</span>
-                    </div>
-                    <span className={
-                      member.role === "admin"
-                        ? styles.roleAdminBadge
-                        : styles.roleMemberBadge
-                    }>
-                      {member.role === "admin" ? "👑 Admin" : "👤 Member"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
 
           {error && <div className={styles.error}>{error}</div>}
 
-          {/* MEMBERS LIST */}
+          {projectData && showMembersDropdown && (
+            <div className={styles.inviteOverlay} onClick={() => setShowMembersDropdown(false)}>
+              <div className={styles.membersPanel} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.invitePanelHeader}>
+                  <div>
+                    <h3 className={styles.inviteTitle}>Team Members</h3>
+                    <p className={styles.membersPanelSubtitle}>
+                      {projectData.members.length} member{projectData.members.length !== 1 ? "s" : ""} in this project
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className={styles.inviteClose}
+                    onClick={() => setShowMembersDropdown(false)}
+                    aria-label="Close team members"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className={styles.membersPanelList}>
+                  {projectData.members.map((member) => (
+                    <div key={member._id} className={styles.memberDropdownItem}>
+                      <div className={styles.memberAvatar}>
+                        {member.avatar ? (
+                          <img src={member.avatar} alt={member.name || "Avatar"} />
+                        ) : (
+                          <span>{member.name?.charAt(0).toUpperCase()}</span>
+                        )}
+                      </div>
+                      <div className={styles.memberInfo}>
+                        <span className={styles.memberName}>{member.name}</span>
+                        <span className={styles.memberEmail}>{member.email}</span>
+                      </div>
+                      <span className={
+                        member.role === "admin"
+                          ? styles.roleAdminBadge
+                          : styles.roleMemberBadge
+                      }>
+                        {member.role === "admin" ? "👑 Admin" : "👤 Member"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
 
           {showInvitePanel && isCurrentUserAdmin && (
             <div className={styles.inviteOverlay} onClick={() => setShowInvitePanel(false)}>
