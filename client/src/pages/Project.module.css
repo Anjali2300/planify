@@ -626,7 +626,22 @@
 
   .headerActions {
     width: 100%;
-    justify-content: space-between;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .roleAdmin,
+  .roleMember,
+  .invitePeopleBtn,
+  .membersToggleBtn {
+    flex: 1 1 auto;
+    min-width: 140px;
+  }
+
+  .roleAdmin,
+  .roleMember {
+    white-space: nowrap;
   }
 
   .createForm,
@@ -636,7 +651,8 @@
 
   .createBtn,
   .createBtnDisabled,
-  .invitePeopleBtn {
+  .invitePeopleBtn,
+  .membersToggleBtn {
     width: 100%;
   }
 
