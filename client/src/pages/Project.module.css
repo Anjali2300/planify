@@ -636,12 +636,40 @@
   .invitePeopleBtn,
   .membersToggleBtn {
     flex: 1 1 auto;
-    min-width: 140px;
+    min-width: 120px;
   }
 
   .roleAdmin,
   .roleMember {
-    white-space: nowrap;
+    white-space: normal;
+  }
+
+  .membersToggleBtn {
+    min-width: 180px;
+  }
+
+  .headerActions > * {
+    max-width: 100%;
+  }
+
+  .memberDropdownItem {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .memberInfo {
+    min-width: 0;
+  }
+
+  .memberName,
+  .memberEmail {
+    word-break: break-word;
+  }
+
+  .roleAdminBadge,
+  .roleMemberBadge {
+    margin-left: auto;
+    flex-shrink: 0;
   }
 
   .createForm,
